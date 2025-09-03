@@ -1,0 +1,113 @@
+@ -----------------------------------------------------------------------------
+@ Copyright 2025 Arisotura
+@
+@ This file is part of wupSNES.
+@
+@ wupSNES is free software: you can redistribute it and/or modify it under
+@ the terms of the GNU General Public License as published by the Free
+@ Software Foundation, either version 3 of the License, or (at your option)
+@ any later version.
+@
+@ wupSNES is distributed in the hope that it will be useful, but WITHOUT ANY
+@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+@ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+@
+@ You should have received a copy of the GNU General Public License along 
+@ with wupSNES. If not, see http://www.gnu.org/licenses/.
+@ -----------------------------------------------------------------------------
+
+.arm
+.align 4
+
+#include "cpu.inc"
+
+.text
+
+.align 4
+.global Mem_IORead8
+.global Mem_IORead16
+.global Mem_IOWrite8
+.global Mem_IOWrite16
+
+.type Mem_IORead8, %function
+.type Mem_IORead16, %function
+.type Mem_IOWrite8, %function
+.type Mem_IOWrite16, %function
+
+Mem_IORead8:
+	and r1, r0, #0xFF00
+	and r0, r0, #0xFF
+	
+	cmp r1, #0x2100
+	beq PPU_Read8
+	
+	cmp r1, #0x4200
+	beq Mem_GIORead8
+	
+	cmp r1, #0x4300
+	beq DMA_Read8
+	
+	cmp r1, #0x4000
+	subeq snesCycles, snesCycles, #0x60000
+	beq Mem_JoyRead8
+	
+	mov r0, #0
+	bx lr
+	
+Mem_IORead16:
+	and r1, r0, #0xFF00
+	and r0, r0, #0xFF
+	
+	cmp r1, #0x2100
+	beq PPU_Read16
+	
+	cmp r1, #0x4200
+	beq Mem_GIORead16
+	
+	cmp r1, #0x4300
+	beq DMA_Read16
+	
+	cmp r1, #0x4000
+	subeq snesCycles, snesCycles, #0xC0000
+	beq Mem_JoyRead16
+	
+	mov r0, #0
+	bx lr
+	
+Mem_IOWrite8:
+	and r2, r0, #0xFF00
+	and r0, r0, #0xFF
+	
+	cmp r2, #0x2100
+	beq PPU_Write8
+	
+	cmp r2, #0x4300
+	beq DMA_Write8
+	
+	cmp r2, #0x4000
+	subeq snesCycles, snesCycles, #0x60000
+	beq Mem_JoyWrite8
+	
+	cmp r2, #0x4200
+	beq Mem_GIOWrite8
+	
+	bx lr
+	
+Mem_IOWrite16:
+	and r2, r0, #0xFF00
+	and r0, r0, #0xFF
+	
+	cmp r2, #0x2100
+	beq PPU_Write16
+	
+	cmp r2, #0x4300
+	beq DMA_Write16
+	
+	cmp r2, #0x4000
+	subeq snesCycles, snesCycles, #0xC0000
+	beq Mem_JoyWrite16
+	
+	cmp r2, #0x4200
+	beq Mem_GIOWrite16
+	
+	bx lr
